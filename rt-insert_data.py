@@ -2,9 +2,9 @@ import os
 import firebase_admin as fa
 from firebase_admin import credentials, auth, db
 from shared_func_firebase import *
-from config import fb_db_url
+from config import rt_db_url
 
-app = init_app(fb_db_url)
+app = init_app(rt_db_url)
 
 data = {
     'Employee': {
@@ -21,4 +21,4 @@ data = {
     }
 }
 
-fb_insert_data(data=data, ref_name="/")
+rt_insert_data(data=data, ref_name="/")

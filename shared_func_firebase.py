@@ -1,16 +1,20 @@
 import os
 import firebase_admin as fa
-from firebase_admin import credentials, auth, db, firestore
+from firebase_admin import credentials, auth, db, firestore,storage
 from config import path_cred_firebase
 
 # Simulate the path to Firebase credentials
 def get_cred():
     return credentials.Certificate(path_cred_firebase)
 
-def init_app(db_url=None):
+def init_app(db_url=None, bucket=None):
     cred = get_cred()
     if db_url is not None:
+        print("db_url:",db_url)
         app = fa.initialize_app(cred, {"databaseURL":db_url})
+    elif bucket is not None:
+        print("bucket:",bucket)
+        app = fa.initialize_app(cred, {"storageBucket":bucket})
     else:
         app = fa.initialize_app(cred)
     print("Firebase Initialized with:", app.name)
@@ -76,14 +80,14 @@ def get_user_by_email(email,verbose=True):
         display_user_info(user)
     return user
 
-def fb_get_data(ref_name,verbose=True):
+def rt_get_data(ref_name,verbose=True):
     ref = fa.db.reference(ref_name)
     data= ref.get()
     if verbose:
         print("data:",data)
     return data
 
-def fb_list_nodes(ref_name="/",verbose=True, mylimit = 100):
+def rt_list_nodes(ref_name="/",verbose=True, mylimit = 100):
     ref = db.reference(ref_name)
     top_nodes =  ref.order_by_key().limit_to_first(mylimit).get()
     lst = []
@@ -94,7 +98,7 @@ def fb_list_nodes(ref_name="/",verbose=True, mylimit = 100):
     return lst
 
 
-def fb_push(new_data, ref_name="/", verbose=True):
+def rt_push(new_data, ref_name="/", verbose=True):
     try:
         ref = db.reference(ref_name)
         ref.push(new_data)
@@ -139,7 +143,7 @@ def generate_password_reset_link(email):
     print("link:",link)
     return link
 
-def fb_insert_data(data,ref_name):
+def rt_insert_data(data,ref_name):
     try:
         ref = fa.db.reference(ref_name)
         ref.set(data)
@@ -150,7 +154,7 @@ def fb_insert_data(data,ref_name):
         print(e)
 
 
-def fb_update_ref_child(data,ref_name, child_name):
+def rt_update_ref_child(data,ref_name, child_name):
     try:
         ref = fa.db.reference(ref_name)
         ref_child = ref.child(child_name)
@@ -170,7 +174,10 @@ def fs_insert_data(data,collection_name, document_name):
         doc_ref = db.collection(collection_name).document(document_name)
         doc_ref.set(data)
         print("inserted:")
+        print("collection name:", collection_name)
+        print("document name:", document_name)
         print(data)
+        print()
     except Exception as e:
         print("failed!")
         print(e)
@@ -191,4 +198,45 @@ def fs_get_data(collection_name, verbose=True):
     except Exception as e:
         print("failed!")
         print(e)
+
+def fs_delete_document(collection_name, document_name, verbose=True):
+    try:
+        db = firestore.client()
+        doc_ref = db.collection(collection_name).document(document_name)
+
+        doc_ref.delete()
+        if verbose:
+            print(f"Deleted Document with name : {document_name}")
+
+    except Exception as e:
+        print("failed!")
+        print(e)
+
+
+def cs_upload_file(file_path, destination_path, verbose=True):
+    try:
+        bucket = storage.bucket()
+        blob = bucket.blob(destination_path)
+        blob.upload_from_filename(file_path)
+        if verbose:
+            print("Uploaded:", file_path)
+    except Exception as e:
+        print("failed!")
+        print(e)
+
+def cs_download_file(file_name, destination_path, verbose=True):
+    try:
+        bucket = storage.bucket()
+        blob = bucket.blob(file_name)
+        blob.download_to_filename(destination_path)
+        if verbose:
+            print("Downloaded:", file_name)
+            print("destination path:", destination_path)
+    except Exception as e:
+        print("failed!")
+        print(e)
+
+
+
+
 
