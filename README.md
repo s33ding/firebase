@@ -9,3 +9,5 @@ In this repository, files are prefixed according to the Firebase services they i
 - `cs` - Cloud Storage
 - `auth` - Authentication
 - `fs` - Firestore
+
+![Firebase Integration Overview](media/firebase.png)
